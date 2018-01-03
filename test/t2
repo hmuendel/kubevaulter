@@ -1,0 +1,7 @@
+This Template will show odd behavior because some references are wrong
+TestCorrect: value21
+TestNonexisting: <no value>
+TestWrongSyntax: { .var2 }
+TestOtherSyntax1: value21
+TestOtherSyntax2: value21
+TestOtherSyntax3: value21

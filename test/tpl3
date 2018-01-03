@@ -1,0 +1,4 @@
+This template will be broken, because the secret does not exist
+Test: {{ .var1 }}
+
+Test2: {{ .var2 }}

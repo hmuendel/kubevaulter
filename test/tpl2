@@ -1,0 +1,7 @@
+This Template will show odd behavior because some references are wrong
+TestCorrect: {{ .var1 }}
+TestNonexisting: {{ .varX }}
+TestWrongSyntax: { .var2 }
+TestOtherSyntax1: {{.var1 }}
+TestOtherSyntax2: {{ .var1}}
+TestOtherSyntax3: {{.var1}}

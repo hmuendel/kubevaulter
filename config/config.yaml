@@ -1,0 +1,34 @@
+# This is an example for a vault init configutation file, in a real setup this file should
+# be mounted as a kubernetes config map
+
+logging:
+  logLevel: "debug" #defaults to
+  logFormat: "text"
+
+vault:
+  endpointUrl: "http://localhost:8200"
+  secretBackend: "secret"
+  role: "demo"
+  jwtPath: "/Users/hans/Documents/go/src/github.com/hmuendel/kubevaulter/local/default_token"
+
+
+fileSecretList:
+- templatePath: "/Users/hans/Documents/go/src/github.com/hmuendel/kubevaulter/test/tpl1"
+  targetPath: "/Users/hans/Documents/go/src/github.com/hmuendel/kubevaulter/test/t1"
+  secretPath: "demo/s1"
+
+- templatePath: "/Users/hans/Documents/go/src/github.com/hmuendel/kubevaulter/test/tpl2"
+  targetPath: "/Users/hans/Documents/go/src/github.com/hmuendel/kubevaulter/test/t2"
+  secretPath: "demo/s2"
+
+- templatePath: "/Users/hans/Documents/go/src/github.com/hmuendel/kubevaulter/test/tpl3"
+  targetPath: "/Users/hans/Documents/go/src/github.com/hmuendel/kubevaulter/test/t3"
+  secretPath: "demo/s3"
+
+- templatePath: "/Users/hans/Documents/go/src/github.com/hmuendel/kubevaulter/test/tpl4"
+  targetPath: "/Users/hans/Documents/go/src/github.com/hmuendel/kubevaulter/test/t4"
+  secretPath: "s4"
+
+- templatePath: "/Users/hans/Documents/go/src/github.com/hmuendel/kubevaulter/test/tpl5"
+  targetPath: "/Users/hans/Documents/go/src/github.com/hmuendel/kubevaulter/test/t5"
+  secretPath: "/demo/s5"

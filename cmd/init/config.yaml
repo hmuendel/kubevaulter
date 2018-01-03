@@ -1,0 +1,14 @@
+# This is an example for a vault init configutation file, in a real setup this file should
+# be mounted as a kubernetes config map
+
+logging:
+  logLevel: "info"
+  logFormat: "text"
+
+vault:
+  endpointUrl: "http://localhost:8200"
+  secretBackend: "secret"
+  role: "demo"
+
+
+
