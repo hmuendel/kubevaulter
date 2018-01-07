@@ -32,7 +32,7 @@ var (
 
 func main() {
 	defaults := make(map[string]interface{})
-	defaults["configPath"] = "/config"
+	defaults["configPath"] = "./config"
 	defaults["configName"] = "config"
 
 	defaults["logging.logLevel"] = "info"
@@ -43,7 +43,7 @@ func main() {
 	defaults["vault.role"] = "demo"
 	defaults["vault.jwtPath"] = "/run/secrets/namespace/token"
 
-	config.Setup("kubevaulter init", VERSION, COMMIT, "KVI",defaults )
+	config.Setup("kubevaulter init", VERSION, COMMIT, "KV",defaults )
 	loggingConfig := config.NewLogginConfig()
 	err :=loggingConfig.Init()
 	if err != nil {

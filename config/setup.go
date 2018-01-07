@@ -31,8 +31,6 @@ func Setup(name, version, commit ,envPrefix string, defaults map[string]interfac
 	setDefaults(defaults)
 	viper.SetConfigName(viper.GetString("configName"))
 	viper.AddConfigPath(viper.GetString("configPath"))
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("./config")
 	err := viper.ReadInConfig()
 	if err != nil { // Handle errors reading the config file
 		log.Panic("Fatal error config file: %s \n", err)
@@ -40,6 +38,7 @@ func Setup(name, version, commit ,envPrefix string, defaults map[string]interfac
 	viper.AutomaticEnv()
 	viper.WatchConfig()
 
+	//Initializing the validation framework
 	valid.SetFieldsRequiredByDefault(true)
 }
 

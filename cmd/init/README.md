@@ -13,38 +13,7 @@
  _/var/run/secrets/kubernetes.io/serviceaccount/token_ and is 
  signed by the Kubernetes signing CA
  
- ## Setup
- To use this init container vault must be configured
- with the 
- [Kubernetes Auth Backend](https://www.vaultproject.io/docs/auth/kubernetes.html)
- and Kubernetes must support 
- [RBAC]()
- and has a service account for vault to allow the token lookup
- 
- 
- ### Vault
- In vault the 
- #### Enable Kubernetes Auth in Vault
- ```bash
- $ vault auth-enable kubernetes
- Successfully enabled 'kubernetes' at 'kubernetes'!
- ```
- #### Create Role
- ```bash
- vault write auth/kubernetes/role/demo \
-     bound_service_account_names=vault-auth \
-     bound_service_account_namespaces=default \
-     policies=default \
-     ttl=1h
- ```
- ### Kubernetes
- 
- --service-account-lookup
- #### Kubernetes RBAC
- 
- #### Create Service Account
- 
- #### Create Role Binding 
+
 
  ## Templating
  
