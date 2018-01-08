@@ -97,7 +97,7 @@ func main() {
 					log.Error(err)
 				}
 			} else {
-				if vaultConfig.failOnEmptySecret {
+				if vaultConfig.FailOnEmptySecret {
 					log.Fatal("Empty reply from secret", vaultConfig.SecretBackend+"/"+fileSecret.SecretPath)
 				} else {
 
