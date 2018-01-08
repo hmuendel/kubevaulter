@@ -27,6 +27,7 @@ type Vault struct {
 	SecretBackend string `valid:"-"`
 	Role string `valid:"-"`
 	JwtPath string `valid:"matches(.+)~Invalid JwtPath"`
+	FailOnEmptySecret bool `valid:"-"`
 }
 
 func NewVaultconfig() (*Vault) {

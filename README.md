@@ -13,7 +13,7 @@ to every pod by default.
 
  To use these tools vault must be correctly configured and  
 reachable from within the kubernetes cluster.
- Kubernetes must support 
+ kubernetes must support 
  [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/)
  
 
@@ -156,5 +156,6 @@ vault:
   secretBackend: "demo-secret" # defaults to "secret" 
   role: "DEMO"
   jwtPath:  "/run/secrets/namespace/token"  # defaults to "/run/secrets/namespace/token" 
+  failOnEmptySecret: true
 ```
 

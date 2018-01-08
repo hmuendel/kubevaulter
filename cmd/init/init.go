@@ -97,8 +97,16 @@ func main() {
 					log.Error(err)
 				}
 			} else {
-				log.Warning("Empty reply from secret", vaultConfig.SecretBackend+"/"+fileSecret.SecretPath)
-				err = temp.Execute(f, "")
+				if vaultConfig.failOnEmptySecret {
+					log.Fatal("Empty reply from secret", vaultConfig.SecretBackend+"/"+fileSecret.SecretPath)
+				} else {
+
+					log.Warning("Empty reply from secret", vaultConfig.SecretBackend+"/"+fileSecret.SecretPath)
+					err = temp.Execute(f, "")
+					if err != nil {
+						log.Fatal(err)
+					}
+				}
 			}
 			err = f.Sync()
 			if err != nil {

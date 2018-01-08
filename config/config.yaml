@@ -10,6 +10,7 @@ vault:
   secretBackend: "secret"
   role: "demo"
   jwtPath: "/Users/hans/Documents/go/src/github.com/hmuendel/kubevaulter/local/default_token"
+  failOnEmptySecret: true
 
 
 fileSecretList:
