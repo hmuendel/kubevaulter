@@ -41,7 +41,7 @@ func main() {
 	defaults["vault.endpointUrl"] = "http://localhost:8200"
 	defaults["vault.secretBackend"] = "secret"
 	defaults["vault.role"] = "demo"
-	defaults["vault.jwtPath"] = "/run/secrets/namespace/token"
+	defaults["vault.jwtPath"] = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 
 	config.Setup("kubevaulter init", VERSION, COMMIT, "KV",defaults )
 	loggingConfig := config.NewLogginConfig()
@@ -50,30 +50,40 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.Debug("reading vault config")
 	vaultConfig := config.NewVaultconfig()
+
 	err = vaultConfig.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	log.Debug("reading secret config")
 	fileSecretConfig := config.NewFileSecretList()
 	err = fileSecretConfig.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	log.Debug("creating login forge with path: ", vaultConfig.JwtPath)
 	lf, err := kubevaulter.NewJwtLoginForge(vaultConfig.JwtPath, vaultConfig.Role)
 	if err != nil {
 		log.Fatal(err)
 	}
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Debug("creating api wrapper")
 	vh, err := kubevaulter.NewApiWrapper(lf,vaultConfig.EndpointUrl)
-
-	vh.KubeAuth()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Debug("authenticating against vault")
+	_, err = vh.KubeAuth()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-
+	log.Debug("getting secrets from vault")
 	for _,fileSecret := range fileSecretConfig {
 		s,err := vh.Read(vaultConfig.SecretBackend + "/" + fileSecret.SecretPath)
 		if err != nil {

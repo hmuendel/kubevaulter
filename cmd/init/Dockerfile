@@ -13,7 +13,6 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 COPY --from=builder /go/src/github.com/hmuendel/kubevaulter/init .
-COPY --from=builder /go/src/github.com/hmuendel/kubevaulter/cmd/init/config.yaml .
 CMD ["./init"]
 
 
