@@ -22,15 +22,21 @@ import (
 	"github.com/hmuendel/kubevaulter/config"
 	"text/template"
 	"os"
+	"path/filepath"
 )
 
 
 var (
 	VERSION string
 	COMMIT string
-)
+	secretMap map[string]secretData
+	templatesPath = "/share"
+	)
+
+type secretData map[string]interface{}
 
 func main() {
+	secretMap = make(map[string]secretData)
 	defaults := make(map[string]interface{})
 	defaults["configPath"] = "./config"
 	defaults["configName"] = "config"
@@ -44,10 +50,9 @@ func main() {
 	defaults["vault.jwtPath"] = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 	defaults["vault.authPath"] = "auth/kubernetes"
 
-
-	config.Setup("kubevaulter init", VERSION, COMMIT, "KV",defaults )
+	config.Setup("kubevaulter recursive", VERSION, COMMIT, "KV", defaults)
 	loggingConfig := config.NewLogginConfig()
-	err :=loggingConfig.Init()
+	err := loggingConfig.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,8 +66,8 @@ func main() {
 	}
 
 	log.Debug("reading secret config")
-	fileSecretConfig := config.NewFileSecretList()
-	err = fileSecretConfig.Init()
+	secretList := config.NewSecretList()
+	err = secretList.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -75,7 +80,7 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Debug("creating api wrapper")
-	vh, err := kubevaulter.NewApiWrapper(lf,vaultConfig.EndpointUrl)
+	vh, err := kubevaulter.NewApiWrapper(lf, vaultConfig.EndpointUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,47 +90,58 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Debug("getting secrets from vault")
-	for _,fileSecret := range fileSecretConfig {
-		s,err := vh.Read(vaultConfig.SecretBackend + "/" + fileSecret.SecretPath)
+	for _, secret := range secretList {
+		log.Debug("getting secret from vault ", vaultConfig.SecretBackend+"/"+secret.VaultPath)
+		s, err := vh.Read(vaultConfig.SecretBackend + "/" + secret.VaultPath)
 		if err != nil {
 			log.Error(err)
 		}
-		temp, err := template.ParseFiles(fileSecret.TemplatePath)
-		if err != nil {
-			log.Error(err)
+		if s != nil && s.Data != nil {
+			secretMap[secret.Name] = s.Data
 		} else {
-			err = os.Remove(fileSecret.TargetPath)
-			if err != nil {
-				log.Error(err)
-			}
-			f, err := os.Create(fileSecret.TargetPath)
-			if err != nil {
-				log.Error(err)
-			}
-			if s != nil && s.Data != nil {
-				err = temp.Execute(f, s.Data)
-				if err != nil {
-					log.Error(err)
-				}
+			if vaultConfig.FailOnEmptySecret {
+				log.Fatal("Empty reply from secret", vaultConfig.SecretBackend+"/"+secret.VaultPath)
 			} else {
-				if vaultConfig.FailOnEmptySecret {
-					log.Fatal("Empty reply from secret", vaultConfig.SecretBackend+"/"+fileSecret.SecretPath)
-				} else {
-
-					log.Warning("Empty reply from secret", vaultConfig.SecretBackend+"/"+fileSecret.SecretPath)
-					err = temp.Execute(f, "")
-					if err != nil {
-						log.Fatal(err)
-					}
-				}
-			}
-			err = f.Sync()
-			if err != nil {
-				log.Error(err)
+				log.Warning("Empty reply from secret", vaultConfig.SecretBackend+"/"+secret.VaultPath)
 			}
 		}
 	}
+	err = filepath.Walk(templatesPath, walkFunc)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+}
+
+
+func walkFunc(path string, info os.FileInfo, err error) error {
+	if err != nil {
+		return err
+	}
+	if info.IsDir() {
+		return nil
+	}
+	log.Debug("reading template ", path)
+	tpl, err := template.ParseFiles(path)
+	if err != nil {
+		return err
+	}
+	log.Debug("read template: ", tpl)
+	log.Debug("openening for writing : ", path)
+	f, err := os.Create(path)
+	defer f.Close()
+	if err != nil {
+		return err
+	}
+	log.Debug("rendering template: ", path)
+	err = tpl.Execute(f,secretMap)
+	if err != nil {
+		return err
+	}
+	log.Debug("writing rendered template to file")
+	f.Sync()
+	return nil
+
 }
 
 

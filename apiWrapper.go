@@ -20,12 +20,15 @@ import (
 	vault "github.com/hashicorp/vault/api"
 )
 
+//ApiWrapper is a wrapper around the official vault raw client as well as the more abstract logical api.
+//It also holds a login forge for creating login requests to authenticate against a vault auth backend.
 type ApiWrapper struct {
 	loginForge LoginForge
 	client     *vault.Client
 	api        *vault.Logical
 }
 
+//NewApiWrapper creates an ApiWrapper with the specified LoginForge and vault server address.
 func NewApiWrapper(loginForger LoginForge, addr string) (*ApiWrapper, error) {
 	config := vault.DefaultConfig()
 	config.Address = addr
@@ -38,6 +41,7 @@ func NewApiWrapper(loginForger LoginForge, addr string) (*ApiWrapper, error) {
 	return &aw, nil
 }
 
+//KubeAuth performs
 func (aw *ApiWrapper) KubeAuth() (*vault.Secret, error) {
 	secret, err := aw.api.Write(aw.loginForge.GetPath(),aw.loginForge.ForgeRequest())
 	if err != nil {

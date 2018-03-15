@@ -6,8 +6,11 @@ the kubernetes service account token is used, which is mounted
 to every pod by default.
 
 ## Available tools
- - [kubevaulter-init](/tree/master/cmd/init) an init container
+ - [kubevaulter-init](https://github.com/hmuendel/kubevaulter/tree/master/cmd/init) an init container
  to write vault secret into templates in the pod filesystem
+ - [kubevaulter-recursive](https://github.com/hmuendel/kubevaulter/tree/master/cmd/recursive) an init container 
+ to recursively traverse through a folder structure and rendereing templates
+ with 
 
 ## Prerequisites
 
@@ -155,7 +158,7 @@ vault:
   endpointUrl: "http://localhost:8200"
   secretBackend: "demo-secret" # defaults to "secret" 
   role: "DEMO"
-  jwtPath:  "/run/secrets/namespace/token"  # defaults to "/run/secrets/namespace/token" 
+  jwtPath:  "/var/run/secrets/kubernetes.io/serviceaccount/token"  # defaults to "/var/run/secrets/kubernetes.io/serviceaccount/token" 
   failOnEmptySecret: true
 ```
 

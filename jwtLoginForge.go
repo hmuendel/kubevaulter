@@ -20,15 +20,17 @@ import (
 	"io/ioutil"
 )
 
-const k8sAuthPath = "auth/kubernetes/login"
+
 
 
 type JwtLoginForge struct {
 	Payload map[string]interface{}
+	k8sAuthPath string
 }
 
-func NewJwtLoginForge(path, role string)  (*JwtLoginForge, error) {
-	ka := JwtLoginForge{make(map[string]interface{})}
+func NewJwtLoginForge(k8sAuthPath, path, role string)  (*JwtLoginForge, error) {
+
+	ka := JwtLoginForge{make(map[string]interface{}), k8sAuthPath}
 	err := ka.ReadToken(path)
 	if err != nil {
 		return nil, err
@@ -51,7 +53,7 @@ func (ka *JwtLoginForge) SetRole(role string) {
 }
 
 func (ka *JwtLoginForge) GetPath() string {
-	return k8sAuthPath
+	return ka.k8sAuthPath
 }
 
 func (ka *JwtLoginForge) ForgeRequest() (map[string]interface{}) {

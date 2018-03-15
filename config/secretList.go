@@ -22,25 +22,24 @@ import (
 	"errors"
 )
 
-// FileSecret holds the configuration parsed from the config file regarding the file secret templating.
-type FileSecret struct {
-	TemplatePath string
-	TargetPath string
-	SecretPath string
+// Secret holds the configuration parsed from the config file regarding the file secret templating.
+type Secret struct {
+	VaultPath string
+	Name string
 }
 
-// FileSecretList is a slice of FileSecret
-type FileSecretList []FileSecret
+// SecretList is a slice of Secret
+type SecretList []Secret
 
-// NewFileSecretList creates and returns a FileSecretList of length 0.
-func NewFileSecretList() FileSecretList {
-	fsl := make(FileSecretList,0)
+// NewSecretList creates and returns a SecretList of length 0.
+func NewSecretList() SecretList {
+	fsl := make(SecretList,0)
 	return fsl
 }
 
-// Init initializes the FileSecretList with values from the config.
-func (fsl *FileSecretList) Init() error {
-	err := viper.UnmarshalKey("fileSecretList", &fsl)
+// Init initializes the SecretList with values from the config.
+func (fsl *SecretList) Init() error {
+	err := viper.UnmarshalKey("secretList", &fsl)
 	if err != nil {
 		return err
 	}
@@ -48,14 +47,14 @@ func (fsl *FileSecretList) Init() error {
 }
 
 // Validate the values parsed from the config.
-func (fsl *FileSecretList) Validate() error {
+func (fsl *SecretList) Validate() error {
 	for fs := range *fsl {
 		ok, err := valid.ValidateStruct(fs)
 		if err != nil {
 			return err
 		}
 		if !ok {
-			return errors.New("error validating vault config")
+			return errors.New("error validating secretList config")
 		}
 	}
 	return nil
