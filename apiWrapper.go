@@ -61,3 +61,13 @@ func (aw *ApiWrapper) Read(path string) (*vault.Secret, error) {
 }
 
 
+func (aw *ApiWrapper) Write(path string, data map[string]interface{}) (*vault.Secret, error) {
+	resp, err :=aw.api.Write(path, data)
+
+	if err != nil {
+		return nil,err
+	}
+	return  resp, nil
+}
+
+
