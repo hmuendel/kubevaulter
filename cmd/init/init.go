@@ -42,7 +42,7 @@ func main() {
 	defaults["vault.secretBackend"] = "secret"
 	defaults["vault.role"] = "demo"
 	defaults["vault.jwtPath"] = "/var/run/secrets/kubernetes.io/serviceaccount/token"
-	defaults["vault.authPath"] = "auth/kubernetes"
+	defaults["vault.authPath"] = "auth/kubernetes/login"
 
 
 	config.Setup("kubevaulter init", VERSION, COMMIT, "KV",defaults )

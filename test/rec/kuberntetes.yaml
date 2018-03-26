@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo-app
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rec-test
+  labels:
+    app: rec-test
+spec:
+  volumes:
+  - name: config-volume
+    configMap:
+      name: config
+  - name: template-volume
+    configMap:
+      name: templates
+  serviceAccountName: demo-app
+  containers:
+  - name: rec
+    image: hmuendel/vaultinitrec
+    command: ["sleep"]
+    args: ["300"]
+    volumeMounts:
+    - name: config-volume
+      mountPath: /root/config
+    - name: template-volume
+      mountPath: /templates
+
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: templates
+data:
+  tpl1: |
+    template1:
+      secret1-user: {{ .s1.service.user }}
+      secret1-pw: {{ .s1.service.password }}
+      secret1-user-second: {{ .s1.service.user }}
+      secret2-user: {{ .s2.service.user }}
+      secret3-pw: {{ .s2.service.password }}
+      nonexistant-secret1: {{ .s3.service.user }}
+      nonexistant-key: {{ .s1.service.not }}
+  tpl2: |
+    template2:
+      secret1-user: {{ .s1.service.user }}
+      secret1-pw: {{ .s1.service.password }}
+      secret1-user-second: {{ .s1.service.user }}
+      secret2-user: {{ .s2.service.user }}
+      secret3-pw: {{ .s2.service.password }}
+      nonexistant-secret1: {{ .s3.service.user }}
+      nonexistant-key: {{ .s1.service.not }}
+
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+data:
+  config.yaml: |
+    secretList:
+    - name: s1
+      vaultPath: demo/s1
+    - name: s2
+      vaultPath: demo/s2
+    logging:
+      logLevel: "debug" #defaults to "info"
+      logFormat: "text" #default to "text"
+
+    vault:
+      endpointUrl: "http://dev-vault:8200"
+      secretBackend: "secret" # defaults to "secret"
+      role: "demo"
+      jwtPath:  "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      failOnEmptySecret: true
+      authPath: auth/hans/login
+

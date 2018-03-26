@@ -39,8 +39,8 @@ func NewFileSecretList() FileSecretList {
 }
 
 // Init initializes the FileSecretList with values from the config.
-func (fsl *FileSecretList) Init() error {
-	err := viper.UnmarshalKey("fileSecretList", &fsl)
+func (gl *FileSecretList) Init() error {
+	err := viper.UnmarshalKey("fileSecretList", &gl)
 	if err != nil {
 		return err
 	}
@@ -48,8 +48,8 @@ func (fsl *FileSecretList) Init() error {
 }
 
 // Validate the values parsed from the config.
-func (fsl *FileSecretList) Validate() error {
-	for fs := range *fsl {
+func (gl *FileSecretList) Validate() error {
+	for fs := range *gl {
 		ok, err := valid.ValidateStruct(fs)
 		if err != nil {
 			return err

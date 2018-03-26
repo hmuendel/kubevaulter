@@ -24,7 +24,6 @@ import (
 
 func Setup(name, version, commit ,envPrefix string, defaults map[string]interface{})  {
 	log.Printf("Starting %s in version: %s commit: %s", name, version, commit )
-
 	viper.SetEnvPrefix(envPrefix)
 	viper.BindEnv("configPath", envPrefix + "_CONFIG_PATH")
 	viper.BindEnv("configName", envPrefix + "_CONFIG_NAME")

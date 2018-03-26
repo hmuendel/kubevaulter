@@ -1,16 +1,17 @@
 # kubevaulter
 
 Kubevaulter are helper tools to handle secrets stored in vault
-inside your kubernetes cluster. To authenticate against vault 
-the kubernetes service account token is used, which is mounted 
-to every pod by default.
+inside your kubernetes cluster. 
 
-## Available tools
- - [kubevaulter-init](https://github.com/hmuendel/kubevaulter/tree/master/cmd/init) an init container
- to write vault secret into templates in the pod filesystem
- - [kubevaulter-recursive](https://github.com/hmuendel/kubevaulter/tree/master/cmd/recursive) an init container 
- to recursively traverse through a folder structure and rendereing templates
- with 
+ ## Authentication
+ For authentication against vault, kubevaulter-init uses the 
+ Kubernetes 
+ [service account](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/)
+ token mounted by default into each pod by Kubernetes 
+ automatically. The token should reside under
+ _/var/run/secrets/kubernetes.io/serviceaccount/token_ and is 
+ signed by the Kubernetes signing CA
+ 
 
 ## Prerequisites
 
@@ -19,7 +20,6 @@ reachable from within the kubernetes cluster.
  kubernetes must support 
  [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/)
  
-
  
  ### Kubernetes with RBAC
 
@@ -63,7 +63,7 @@ reachable from within the kubernetes cluster.
 #### Create Service Accounts
   
 One service account need to exist with which vault authenticates
-against the kuberentes api. 
+against the kubernetes api. 
 
  ```yaml
 apiVersion: v1
@@ -75,9 +75,6 @@ metadata:
 For each pod that accesses secrets in vault, a service account
 should exist to authenticate against vault. This can also be
 the default namespace service account, depending on the needs.
-
-In this example the
-
 
 
 #### Create Role Binding 
@@ -96,7 +93,6 @@ subjects:
   name: vault-auth
   namespace: default
 ``` 
-
 
  ### Vault
  To use authentication via service account tokens, the 
@@ -160,5 +156,15 @@ vault:
   role: "DEMO"
   jwtPath:  "/var/run/secrets/kubernetes.io/serviceaccount/token"  # defaults to "/var/run/secrets/kubernetes.io/serviceaccount/token" 
   failOnEmptySecret: true
+  authPath: auth/foo/login # defaults to auth/kubernetes/login
 ```
+
+## Available tools
+ - [kubevaulter-init](https://github.com/hmuendel/kubevaulter/tree/master/cmd/init) an init container
+ to render vault secrets into templates from specific path in the pod filesystem
+ - [kubevaulter-recursive](https://github.com/hmuendel/kubevaulter/tree/master/cmd/rec) an init container 
+ to recursively traverse through a folder structure and rendereing templates
+ with secret values from vault
+ - [kubevaulter-generator](https://github.com/hmuendel/kubevaulter/tree/master/cmd/gen)
+ creates random strings and stores them in specified vault paths 
 

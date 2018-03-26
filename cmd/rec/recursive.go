@@ -48,9 +48,9 @@ func main() {
 	defaults["vault.secretBackend"] = "secret"
 	defaults["vault.role"] = "demo"
 	defaults["vault.jwtPath"] = "/var/run/secrets/kubernetes.io/serviceaccount/token"
-	defaults["vault.authPath"] = "auth/kubernetes"
+	defaults["vault.authPath"] = "auth/kubernetes/login"
 
-	config.Setup("kubevaulter recursive", VERSION, COMMIT, "KV", defaults)
+	config.Setup("kubevaulter rec", VERSION, COMMIT, "KV", defaults)
 	loggingConfig := config.NewLogginConfig()
 	err := loggingConfig.Init()
 	if err != nil {
@@ -71,7 +71,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Debug("creating login forge with path: ", vaultConfig.JwtPath)
+	log.Debug("creating login forge with path: ", vaultConfig.JwtPath, " and auth path ", vaultConfig.AuthPath )
 	lf, err := kubevaulter.NewJwtLoginForge(vaultConfig.AuthPath, vaultConfig.JwtPath, vaultConfig.Role)
 	if err != nil {
 		log.Fatal(err)
@@ -100,9 +100,9 @@ func main() {
 			secretMap[secret.Name] = s.Data
 		} else {
 			if vaultConfig.FailOnEmptySecret {
-				log.Fatal("Empty reply from secret", vaultConfig.SecretBackend+"/"+secret.VaultPath)
+				log.Fatal("Empty reply from secret ", vaultConfig.SecretBackend+"/"+secret.VaultPath)
 			} else {
-				log.Warning("Empty reply from secret", vaultConfig.SecretBackend+"/"+secret.VaultPath)
+				log.Warning("Empty reply from secret ", vaultConfig.SecretBackend+"/"+secret.VaultPath)
 			}
 		}
 	}
