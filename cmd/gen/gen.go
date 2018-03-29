@@ -42,9 +42,9 @@ func main() {
 	defaults["vault.role"] = "demo"
 	defaults["vault.jwtPath"] = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 	defaults["vault.authPath"] = "auth/kubernetes/login"
-	defaults["generatorList.override"] = false
-	defaults["generatorList.length"] = 16
-	defaults["generatorList.allowedCharacters"] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	defaults["generator.override"] = false
+	defaults["generator.length"] = 16
+	defaults["generator.allowedCharacters"] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 
 	config.Setup("kubevaulter rec", VERSION, COMMIT, "KV", defaults)
@@ -62,12 +62,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Debug("reading generator config")
-	generatorList := config.NewGeneratorList()
-	err = generatorList.Init()
+	log.Debug("reading target list config")
+	targetList := config.NewTargetList()
+	err = targetList.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Debug("reading random strings config")
+	randomStringsCfg := config.NewRandomStrings()
+	err = randomStringsCfg.Init()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Debug("creating login forge with path: ", vaultConfig.JwtPath, " and auth path ", vaultConfig.AuthPath )
 	lf, err := kubevaulter.NewJwtLoginForge(vaultConfig.AuthPath, vaultConfig.JwtPath, vaultConfig.Role)
 	if err != nil {
@@ -81,16 +89,25 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	log.Debug("authenticating against vault")
 	_, err = vh.KubeAuth()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, generator := range generatorList {
-		rstring := randstring.Create(generator.Length,generator.AllowedCharacters)
-		data := make(map[string]interface{})
-		data[generator.Key] = rstring
-		vh.Write(generator.Path,data)
+	randomStringMap := make(map[string]string)
+	for key, value := range randomStringsCfg {
+		randomStringMap[key] = randstring.Create(value.Length,value.AllowedCharacters)
 	}
+	log.Debug("created random string map ", randomStringMap)
+
+	for _, target := range targetList  {
+		payload := make(map[string]interface{})
+		for key, value := range target.Data {
+			payload[key] = randomStringMap[value.Ref]
+		}
+		vh.Write(target.Path,payload)
+	}
+
 }

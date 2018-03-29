@@ -22,23 +22,24 @@ valid "github.com/asaskevich/govalidator"
 "errors"
 )
 
-type Generator struct {
-	Path              string
-	Key               string
-	Override          bool
-	Length            int
-	AllowedCharacters string
+type TargetData struct {
+	Ref string
+	Transform string
+}
+type Target struct {
+	Path string
+	Data map[string]TargetData
 }
 
-type GeneratorList []Generator
+type TargetList []Target
 
-func NewGeneratorList() GeneratorList {
-	gl := make(GeneratorList,0)
+func NewTargetList() TargetList {
+	gl := make(TargetList,0)
 	return gl
 }
 
-func (gl *GeneratorList) Init() error {
-	err := viper.UnmarshalKey("generatorList", &gl)
+func (gl *TargetList) Init() error {
+	err := viper.UnmarshalKey("targetList", &gl)
 	if err != nil {
 		return err
 	}
@@ -46,14 +47,14 @@ func (gl *GeneratorList) Init() error {
 }
 
 // Validate the values parsed from the config.
-func (gl *GeneratorList) Validate() error {
+func (gl *TargetList) Validate() error {
 	for g := range *gl {
 		ok, err := valid.ValidateStruct(g)
 		if err != nil {
 			return err
 		}
 		if !ok {
-			return errors.New("error validating generator list")
+			return errors.New("error validating target list")
 		}
 	}
 	return nil
