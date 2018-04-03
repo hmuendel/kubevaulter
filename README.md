@@ -1,4 +1,6 @@
 # kubevaulter
+__Warning: This project is in alpha phase and breaking changes are
+usual.__
 
 Kubevaulter are helper tools to handle secrets stored in vault
 inside your kubernetes cluster. 
@@ -157,6 +159,7 @@ vault:
   jwtPath:  "/var/run/secrets/kubernetes.io/serviceaccount/token"  # defaults to "/var/run/secrets/kubernetes.io/serviceaccount/token" 
   failOnEmptySecret: true
   authPath: auth/foo/login # defaults to auth/kubernetes/login
+  caCert:
 ```
 
 ## Available tools
@@ -167,4 +170,7 @@ vault:
  with secret values from vault
  - [kubevaulter-generator](https://github.com/hmuendel/kubevaulter/tree/master/cmd/gen)
  creates random strings and stores them in specified vault paths 
+ - [kubevaulter-executor](https://github.com/hmuendel/kubevaulter/tree/master/cmd/exec)
+  executing applications inside the container while providing secret values from vault 
+  as parameters to this application
 

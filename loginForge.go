@@ -20,5 +20,6 @@ package kubevaulter
 type LoginForge interface {
 	SetRole(role string)
 	GetPath() string
+	CaCert() string
 	ForgeRequest()  (map[string]interface{})
 }

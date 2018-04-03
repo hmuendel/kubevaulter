@@ -47,7 +47,7 @@ func main() {
 	defaults["generator.allowedCharacters"] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 
-	config.Setup("kubevaulter rec", VERSION, COMMIT, "KV", defaults)
+	config.Setup("kubevaulter gen", VERSION, COMMIT, "KV", defaults)
 	loggingConfig := config.NewLogginConfig()
 	err := loggingConfig.Init()
 	if err != nil {
@@ -76,8 +76,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Debug("creating login forge with path: ", vaultConfig.JwtPath, " and auth path ", vaultConfig.AuthPath )
-	lf, err := kubevaulter.NewJwtLoginForge(vaultConfig.AuthPath, vaultConfig.JwtPath, vaultConfig.Role)
+	log.Debug("creating login forge with path: ", vaultConfig.JwtPath, ", Role: ", vaultConfig.Role,
+		", caCert: ", vaultConfig.CaCert," and auth path ", vaultConfig.AuthPath )
+	lf, err := kubevaulter.NewJwtLoginForge(vaultConfig.AuthPath, vaultConfig.JwtPath, vaultConfig.Role, vaultConfig.CaCert)
 	if err != nil {
 		log.Fatal(err)
 	}

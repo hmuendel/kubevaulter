@@ -26,6 +26,12 @@
   version = "v1.4.2"
 
 [[projects]]
+  branch = "release-branch.go1"
+  name = "github.com/golang/go"
+  packages = ["src/pkg/math/rand"]
+  revision = "08b97d4061dd75ceec1d44e4335183cd791c9306"
+
+[[projects]]
   branch = "master"
   name = "github.com/golang/snappy"
   packages = ["."]
@@ -58,12 +64,27 @@
 [[projects]]
   branch = "master"
   name = "github.com/hashicorp/hcl"
-  packages = [".","hcl/ast","hcl/parser","hcl/scanner","hcl/strconv","hcl/token","json/parser","json/scanner","json/token"]
+  packages = [
+    ".",
+    "hcl/ast",
+    "hcl/parser",
+    "hcl/scanner",
+    "hcl/strconv",
+    "hcl/token",
+    "json/parser",
+    "json/scanner",
+    "json/token"
+  ]
   revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
 
 [[projects]]
   name = "github.com/hashicorp/vault"
-  packages = ["api","helper/compressutil","helper/jsonutil","helper/parseutil"]
+  packages = [
+    "api",
+    "helper/compressutil",
+    "helper/jsonutil",
+    "helper/parseutil"
+  ]
   revision = "87b6919dea55da61d7cd444b2442cabb8ede8ab1"
   version = "v0.9.1"
 
@@ -86,6 +107,50 @@
   revision = "06020f85339e21b2478f756a78e295255ffa4d6a"
 
 [[projects]]
+  name = "github.com/onsi/ginkgo"
+  packages = [
+    ".",
+    "config",
+    "internal/codelocation",
+    "internal/containernode",
+    "internal/failer",
+    "internal/leafnodes",
+    "internal/remote",
+    "internal/spec",
+    "internal/spec_iterator",
+    "internal/specrunner",
+    "internal/suite",
+    "internal/testingtproxy",
+    "internal/writer",
+    "reporters",
+    "reporters/stenographer",
+    "reporters/stenographer/support/go-colorable",
+    "reporters/stenographer/support/go-isatty",
+    "types"
+  ]
+  revision = "9eda700730cba42af70d53180f9dcce9266bc2bc"
+  version = "v1.4.0"
+
+[[projects]]
+  name = "github.com/onsi/gomega"
+  packages = [
+    ".",
+    "format",
+    "internal/assertion",
+    "internal/asyncassertion",
+    "internal/oraclematcher",
+    "internal/testingtsupport",
+    "matchers",
+    "matchers/support/goraph/bipartitegraph",
+    "matchers/support/goraph/edge",
+    "matchers/support/goraph/node",
+    "matchers/support/goraph/util",
+    "types"
+  ]
+  revision = "003f63b7f4cff3fc95357005358af2de0f5fe152"
+  version = "v1.3.0"
+
+[[projects]]
   name = "github.com/pelletier/go-toml"
   packages = ["."]
   revision = "16398bac157da96aa88f98a2df640c7f32af1da2"
@@ -99,7 +164,10 @@
 
 [[projects]]
   name = "github.com/spf13/afero"
-  packages = [".","mem"]
+  packages = [
+    ".",
+    "mem"
+  ]
   revision = "8d919cbe7e2627e417f3e45c3c0e489a5b7e2536"
   version = "v1.0.0"
 
@@ -136,19 +204,57 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["http2","http2/hpack","idna","lex/httplex"]
+  packages = [
+    "html",
+    "html/atom",
+    "html/charset",
+    "http2",
+    "http2/hpack",
+    "idna",
+    "lex/httplex"
+  ]
   revision = "d866cfc389cec985d6fda2859936a575a55a3ab6"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix","windows"]
+  packages = [
+    "unix",
+    "windows"
+  ]
   revision = "83801418e1b59fb1880e363299581ee543af32ca"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
-  packages = ["collate","collate/build","internal/colltab","internal/gen","internal/tag","internal/triegen","internal/ucd","language","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable"]
+  packages = [
+    "collate",
+    "collate/build",
+    "encoding",
+    "encoding/charmap",
+    "encoding/htmlindex",
+    "encoding/internal",
+    "encoding/internal/identifier",
+    "encoding/japanese",
+    "encoding/korean",
+    "encoding/simplifiedchinese",
+    "encoding/traditionalchinese",
+    "encoding/unicode",
+    "internal/colltab",
+    "internal/gen",
+    "internal/tag",
+    "internal/triegen",
+    "internal/ucd",
+    "internal/utf8internal",
+    "language",
+    "runes",
+    "secure/bidirule",
+    "transform",
+    "unicode/bidi",
+    "unicode/cldr",
+    "unicode/norm",
+    "unicode/rangetable"
+  ]
   revision = "e19ae1496984b1c655b8044a65c0300a3c878dd3"
 
 [[projects]]
@@ -160,6 +266,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b59a830cfe7829e2824dbd5a80f7b77b28c77ac262df531301f87af4e040896b"
+  inputs-digest = "9c2319b8621fea16d02e904af109ed96a04b10d12f82088f0c64a4490c22339d"
   solver-name = "gps-cdcl"
   solver-version = 1

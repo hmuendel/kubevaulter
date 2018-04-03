@@ -29,6 +29,7 @@ type Vault struct {
 	JwtPath string `valid:"matches(.+)~Invalid JwtPath"`
 	FailOnEmptySecret bool `valid:"-"`
 	AuthPath string `valid:"-"`
+	CaCert string `valid:"-"`
 }
 
 func NewVaultconfig() (*Vault) {

@@ -20,6 +20,15 @@ import (
 	vault "github.com/hashicorp/vault/api"
 )
 
+type SecretData map[string]interface{}
+type SecretDataMap map[string]Secret
+type Secret struct {
+	Name string
+	Path string
+	Data SecretData
+}
+
+
 //ApiWrapper is a wrapper around the official vault raw client as well as the more abstract logical api.
 //It also holds a login forge for creating login requests to authenticate against a vault auth backend.
 type ApiWrapper struct {
@@ -32,7 +41,9 @@ type ApiWrapper struct {
 func NewApiWrapper(loginForger LoginForge, addr string) (*ApiWrapper, error) {
 	config := vault.DefaultConfig()
 	config.Address = addr
+	config.ConfigureTLS(&vault.TLSConfig{CACert:loginForger.CaCert()})
 	vc, err := vault.NewClient(config)
+
 	if err != nil {
 		return nil,err
 	}
@@ -68,6 +79,10 @@ func (aw *ApiWrapper) Write(path string, data map[string]interface{}) (*vault.Se
 		return nil,err
 	}
 	return  resp, nil
+}
+
+func (aw *ApiWrapper) Populate()  {
+	
 }
 
 

@@ -26,11 +26,12 @@ import (
 type JwtLoginForge struct {
 	Payload map[string]interface{}
 	k8sAuthPath string
+	caCert string
 }
 
-func NewJwtLoginForge(k8sAuthPath, path, role string)  (*JwtLoginForge, error) {
+func NewJwtLoginForge(k8sAuthPath, path, role, caCert string)  (*JwtLoginForge, error) {
 
-	ka := JwtLoginForge{make(map[string]interface{}), k8sAuthPath}
+	ka := JwtLoginForge{make(map[string]interface{}), k8sAuthPath, caCert}
 	err := ka.ReadToken(path)
 	if err != nil {
 		return nil, err
@@ -46,6 +47,10 @@ func (ka *JwtLoginForge) ReadToken(path string) error {
 	}
 	ka.Payload["jwt"] = string(token)
 	return  nil
+}
+
+func (ka *JwtLoginForge) CaCert() string {
+	return ka.caCert
 }
 
 func (ka *JwtLoginForge) SetRole(role string) {

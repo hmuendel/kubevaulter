@@ -20,16 +20,24 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
 	valid "github.com/asaskevich/govalidator"
+	"os"
 )
 
+
+// Setup is initializing the basic configuration like config path and name and the validation framework
+// as well as setting the passed defaults
 func Setup(name, version, commit ,envPrefix string, defaults map[string]interface{})  {
 	log.Printf("Starting %s in version: %s commit: %s", name, version, commit )
+	setDefaults(defaults)
 	viper.SetEnvPrefix(envPrefix)
 	viper.BindEnv("configPath", envPrefix + "_CONFIG_PATH")
 	viper.BindEnv("configName", envPrefix + "_CONFIG_NAME")
-	setDefaults(defaults)
+	log.Printf("Config path env variable ",envPrefix,"_CONFIG_PATH:", os.Getenv(envPrefix + "_CONFIG_PATH"))
+	log.Printf("Config name env variable ",envPrefix,"_CONFIG_NAME:", os.Getenv(envPrefix + "_CONFIG_NAME"))
+	log.Printf("Reading config from ", viper.GetString("configPath"),"/",viper.GetString("configName"))
 	viper.SetConfigName(viper.GetString("configName"))
 	viper.AddConfigPath(viper.GetString("configPath"))
+
 	err := viper.ReadInConfig()
 	if err != nil { // Handle errors reading the config file
 		log.Panic("Fatal error config file: %s \n", err)
@@ -42,6 +50,7 @@ func Setup(name, version, commit ,envPrefix string, defaults map[string]interfac
 }
 
 func setDefaults(defaults map[string]interface{})  {
+	log.Debug("Setting defaults ", defaults)
 	for k, v := range defaults {
 		viper.SetDefault(k,v)
 	}
