@@ -25,6 +25,7 @@ valid "github.com/asaskevich/govalidator"
 type TargetData struct {
 	Ref string
 	Transform string
+	Lit string
 }
 type Target struct {
 	Path string
@@ -56,6 +57,14 @@ func (gl *TargetList) Validate() error {
 		if !ok {
 			return errors.New("error validating target list")
 		}
+		for _, target := range []Target(*gl) {
+			for _, value := range target.Data {
+				if value.Transform == "" {
+					value.Transform = viper.GetString("generator.transform")
+				}
+			}
+		}
+
 	}
 	return nil
 }

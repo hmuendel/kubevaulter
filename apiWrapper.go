@@ -17,6 +17,7 @@
 package kubevaulter
 
 import (
+	"fmt"
 	vault "github.com/hashicorp/vault/api"
 )
 
@@ -41,7 +42,12 @@ type ApiWrapper struct {
 func NewApiWrapper(loginForger LoginForge, addr string) (*ApiWrapper, error) {
 	config := vault.DefaultConfig()
 	config.Address = addr
-	config.ConfigureTLS(&vault.TLSConfig{CACert:loginForger.CaCert()})
+	t := vault.TLSConfig{CACert: loginForger.CaCert()}
+	fmt.Println(t.CACert)
+	err := config.ConfigureTLS(&t)
+	if err != nil {
+		return nil,err
+	}
 	vc, err := vault.NewClient(config)
 
 	if err != nil {

@@ -23,12 +23,14 @@ targetList:
      data: 
        DB_PW: 
         ref: dbPassword
+       DB_USER:
+         lit: admin
        
 
 
 randomStrings:
   userPassword: 
-    override: true  #defaults to false
+    override: true  #defaults to false, there might be the case, that
     allowedCharacters: "!@#$%^&*()-_=+,.?/:;{}[]~" #defaults to ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
   dbPassword:
     length: 32 #defaults to 16

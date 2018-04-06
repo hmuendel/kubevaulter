@@ -18,8 +18,8 @@ package config
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/viper"
 	valid "github.com/asaskevich/govalidator"
+	"github.com/spf13/viper"
 	"os"
 )
 
@@ -29,12 +29,13 @@ import (
 func Setup(name, version, commit ,envPrefix string, defaults map[string]interface{})  {
 	log.Printf("Starting %s in version: %s commit: %s", name, version, commit )
 	setDefaults(defaults)
+	log.Println("Config path env variable ",envPrefix,"_CONFIG_PATH:", os.Getenv(envPrefix + "_CONFIG_PATH"))
+	log.Println("Config name env variable ",envPrefix,"_CONFIG_NAME:", os.Getenv(envPrefix + "_CONFIG_NAME"))
 	viper.SetEnvPrefix(envPrefix)
 	viper.BindEnv("configPath", envPrefix + "_CONFIG_PATH")
 	viper.BindEnv("configName", envPrefix + "_CONFIG_NAME")
-	log.Printf("Config path env variable ",envPrefix,"_CONFIG_PATH:", os.Getenv(envPrefix + "_CONFIG_PATH"))
-	log.Printf("Config name env variable ",envPrefix,"_CONFIG_NAME:", os.Getenv(envPrefix + "_CONFIG_NAME"))
-	log.Printf("Reading config from ", viper.GetString("configPath"),"/",viper.GetString("configName"))
+
+	log.Println("Reading config from ", viper.GetString("configPath"),"/",viper.GetString("configName"))
 	viper.SetConfigName(viper.GetString("configName"))
 	viper.AddConfigPath(viper.GetString("configPath"))
 

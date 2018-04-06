@@ -21,6 +21,7 @@ import (
 	"github.com/hmuendel/kubevaulter"
 	"github.com/hmuendel/kubevaulter/config"
 	"github.com/hmuendel/kubevaulter/randstring"
+	"github.com/hmuendel/kubevaulter/transformer"
 )
 
 var (
@@ -45,6 +46,7 @@ func main() {
 	defaults["generator.override"] = false
 	defaults["generator.length"] = 16
 	defaults["generator.allowedCharacters"] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	defaults["generator.transform"] = "NONE"
 
 
 	config.Setup("kubevaulter gen", VERSION, COMMIT, "KV", defaults)
@@ -98,17 +100,66 @@ func main() {
 	}
 
 	randomStringMap := make(map[string]string)
+	funcMap := transformer.DefaultFuncMap()
 	for key, value := range randomStringsCfg {
+		log.Debug("creating random string ", key)
 		randomStringMap[key] = randstring.Create(value.Length,value.AllowedCharacters)
 	}
-	log.Debug("created random string map ", randomStringMap)
-
+	log.Debug("created random string map ")
+	// iterating over all target entries in target list
 	for _, target := range targetList  {
+		log.Debug("handling data for target ", target.Path)
 		payload := make(map[string]interface{})
+		// reading target value from vault to check if it exists
+		s,reterr := vh.Read(target.Path)
+		// iterating over key value pairs in the desired secret
 		for key, value := range target.Data {
-			payload[key] = randomStringMap[value.Ref]
+			log.Debug("handling data ", key)
+			//using the literal value if set
+			if value.Lit != "" {
+				log.Debug("using literal value ")
+				if fn, ok := funcMap[value.Transform]; ok {
+					payload[key] = fn(value.Lit)
+				} else {
+					log.Error("No function found with identifier: ", value.Transform)
+				}
+			} else if value.Ref != "" {
+				log.Debug("using ref to random string ", value.Ref)
+				var val interface{}
+				ok := false
+				//checking if the value at this key exists and can be retrieved
+				if reterr == nil && s != nil && s.Data != nil {
+					log.Debug("retrieving value from old secret")
+					val, ok = s.Data[key]
+				}
+				// if value exists and override flag is not set prepare payload with old value
+
+				if rString, exists := randomStringsCfg[value.Ref]; exists && ! rString.Override && ok {
+					if ! exists {
+						log.Warning("nothing found in random string cfg for ", value.Ref)
+					}
+					log.Debug("using old value")
+					payload[key] = val
+				} else {
+					// otherwise prepare payload with new value
+					log.Debug("writing new value")
+					if  val, ok := randomStringMap[value.Ref]; ok {
+						if fn, ok := funcMap[value.Transform]; ok {
+							payload[key] = fn(val)
+						} else {
+							log.Error("No function found with identifier: ", value.Transform)
+						}
+					} else {
+						log.Error("Referenced random string not find ",value.Ref )
+					}
+				}
+			} else {
+				log.Error("One of lit or ref must be set for ", key)
+			}
 		}
+		log.Debug("writing data structure to vault")
 		vh.Write(target.Path,payload)
 	}
+	log.Info("finished successfully")
 
 }
