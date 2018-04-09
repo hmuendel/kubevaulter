@@ -1,12 +1,13 @@
-package config_test
+package leafnodes_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
 	"testing"
 )
 
-func TestConfig(t *testing.T) {
+func TestLeafNode(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Config Suite")
+	RunSpecs(t, "LeafNode Suite")
 }

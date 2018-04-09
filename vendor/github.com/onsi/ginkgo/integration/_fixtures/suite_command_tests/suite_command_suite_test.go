@@ -1,12 +1,13 @@
-package config_test
+package suite_command_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
 	"testing"
 )
 
-func TestConfig(t *testing.T) {
+func TestSuiteCommand(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Config Suite")
+	RunSpecs(t, "Suite Command Suite")
 }
