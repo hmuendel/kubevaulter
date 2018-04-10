@@ -1,0 +1,21 @@
+# Default values for vault.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+image:
+  repository: vault
+  tag: latest
+  pullPolicy: Always
+service:
+  name: vault
+  type: NodePort
+  port: 8200
+vault:
+  dev: true
+  config:
+    # A YAML representation of a final vault config.json file.
+    # See https://www.vaultproject.io/docs/configuration/ for more information.
+    listener:
+      tcp:
+        address: '[::]:8200'
+        tls_disable: true

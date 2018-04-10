@@ -22,39 +22,35 @@ import (
 	"errors"
 )
 
-// Secret holds the configuration parsed from the config file regarding the file secret templating.
-type Secret struct {
-	VaultPath string
-	Name string
+type Execution struct {
+	Command string
+	Args []string
+	Env []string
 }
 
-// SecretList is a slice of Secret
-type SecretList []Secret
+type Executions []Execution
 
-// NewSecretList creates and returns a SecretList of length 0.
-func NewSecretList() SecretList {
-	fsl := make(SecretList,0)
-	return fsl
+func NewExecutions() Executions {
+	ex := make(Executions,0)
+	return ex
 }
 
-// Init initializes the SecretList with values from the config.
-func (ex *SecretList) Init() error {
-	err := viper.UnmarshalKey("secretList", &ex)
+func (ex *Executions) Init() error {
+	err := viper.UnmarshalKey("executions", &ex)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// Validate the values parsed from the config.
-func (ex *SecretList) Validate() error {
-	for fs := range *ex {
-		ok, err := valid.ValidateStruct(fs)
+func (ex *Executions) Validate() error {
+	for e := range *ex {
+		ok, err := valid.ValidateStruct(e)
 		if err != nil {
 			return err
 		}
 		if !ok {
-			return errors.New("error validating secretList config")
+			return errors.New("error validating executions config")
 		}
 	}
 	return nil

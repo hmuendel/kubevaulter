@@ -17,17 +17,14 @@
 package kubevaulter
 
 import (
+	"errors"
 	"fmt"
 	vault "github.com/hashicorp/vault/api"
+	"github.com/hmuendel/kubevaulter/config"
 )
 
 type SecretData map[string]interface{}
-type SecretDataMap map[string]Secret
-type Secret struct {
-	Name string
-	Path string
-	Data SecretData
-}
+
 
 
 //ApiWrapper is a wrapper around the official vault raw client as well as the more abstract logical api.
@@ -36,6 +33,7 @@ type ApiWrapper struct {
 	loginForge LoginForge
 	client     *vault.Client
 	api        *vault.Logical
+	VaultConfig config.Vault
 }
 
 //NewApiWrapper creates an ApiWrapper with the specified LoginForge and vault server address.
@@ -87,8 +85,23 @@ func (aw *ApiWrapper) Write(path string, data map[string]interface{}) (*vault.Se
 	return  resp, nil
 }
 
-func (aw *ApiWrapper) Populate()  {
-	
+
+func (aw *ApiWrapper) Populate(secretList config.SecretList) (map[string]SecretData, error) {
+	secretMap := make(map[string]SecretData)
+	for _, secret := range secretList {
+		s, err := aw.Read(aw.VaultConfig.SecretBackend + "/" + secret.VaultPath)
+		if err != nil {
+			return nil, err
+		}
+		if s != nil && s.Data != nil {
+			secretMap[secret.Name] = s.Data
+		} else {
+			if aw.VaultConfig.FailOnEmptySecret {
+				return  nil, errors.New(aw.VaultConfig.SecretBackend + "/" + secret.VaultPath +" was empty")
+			}
+		}
+	}
+	return secretMap, nil
 }
 
 

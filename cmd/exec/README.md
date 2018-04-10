@@ -19,13 +19,13 @@ executions:
     args: 
       - "/var/templates/template1.tpl"
       
-templateList:
-  - "/var/templates/template1.tpl" 
-  
+
 recursivePathList:
   - "/var/scripts"  
    
 secretList:
-  - name: demo
-    vaultPath: demo/secret
+  - name: env
+    vaultPath: secret/env
+  - name: user
+    vaultPath: secret/user
 ```

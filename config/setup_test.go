@@ -22,21 +22,22 @@ const (
 	dirPrefix = "kubevaulter-test-dir"
 	realFilename = "test-config"
 	realBrokenFilename = "realBrokenFileName"
+	brokenFileContent ="	brokenContent"
+)
+
+var (
+	realDirName string
+	configFileContent string
+)
+
+
+var _ = BeforeSuite(func() {
 	configFileContent =`fileKey1: fileValue1
 filekey2: fileValue2
 keyMap:
   nestedKey: nestedValue
   nestedMap:
     nestednestedKey: nestednestedValue`
-	brokenFileContent ="	brokenContent"
-)
-
-var (
-	realDirName string
-)
-
-
-var _ = BeforeSuite(func() {
 	var err error
 	realDirName, err = ioutil.TempDir("", dirPrefix)
 	if err != nil {
@@ -61,7 +62,6 @@ var _ = BeforeSuite(func() {
 		if err != nil {
 			fmt.Println("close:", err)
 		}
-
 	}()
 	f.Write([]byte(configFileContent))
 	fb.Write([]byte(brokenFileContent))
@@ -122,7 +122,7 @@ var _ = Describe("Setup", func() {
 			})
 		})
 		Context("with prefix set incorrectly ", func() {
-			It("the missing config location should cause an error", func() {
+			It("the missing config location should cause a panic", func() {
 				setEnvPrefix = "WrongPrefix"
 				fn := func() {
 					config.Setup(name, version, commit, setEnvPrefix,defaults)
