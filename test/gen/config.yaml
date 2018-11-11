@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubevaulter-gen
+  namespace: default
+data:
+  config.yaml: |
+    targetList:
+       - path: "secret/write/foo"
+         data:
+           keyName1:
+            ref: userPassword
+            transform: SHA256
+           keyName2:
+            ref: userPassword
+       - path: "secret/write/bar"
+         data:
+           DB_PW:
+            ref: dbPassword
+           DB_USER:
+             lit: admin
+    randomStrings:
+      userPassword:
+        override: true  #defaults to false, there might be the case, that
+        allowedCharacters: "!@#$%^&*()-_=+,.?/:;{}[]~" #defaults to ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
+      dbPassword:
+        length: 32 #defaults to 16
+    logging:
+      logLevel: "debug" #defaults to "info"
+      logFormat: "text"
+    vault:
+      endpointUrl: "https://kubevaulter-test-vault:8200"
+      role: "default"
+      jwtPath:  "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      failOnEmptySecret: true
+      authPath: auth/kubernetes/login # defaults to auth/kubernetes/login
+      caCert: /root/certs/root.pem

@@ -1,5 +1,5 @@
 path "secret/write/*" {
-  capabilities = ["create", "update"]
+  capabilities = ["create", "update", "read"]
 }
 
 path "secret/mixed/*" {

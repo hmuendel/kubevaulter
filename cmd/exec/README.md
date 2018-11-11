@@ -23,6 +23,7 @@ executions:
 recursivePathList:
   - "/var/scripts"  
    
+
 secretList:
   - name: env
     vaultPath: secret/env

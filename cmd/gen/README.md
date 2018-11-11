@@ -25,8 +25,15 @@ targetList:
         ref: dbPassword
        DB_USER:
          lit: admin
+       userName:
+         lit: {{ user.name }}
        
 
+secretList:
+  - name: env
+    vaultPath: secret/env
+  - name: user
+    vaultPath: secret/user
 
 randomStrings:
   userPassword: 

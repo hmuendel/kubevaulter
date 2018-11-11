@@ -86,10 +86,13 @@ func (aw *ApiWrapper) Write(path string, data map[string]interface{}) (*vault.Se
 }
 
 
-func (aw *ApiWrapper) Populate(secretList config.SecretList) (map[string]SecretData, error) {
+func (aw *ApiWrapper) Populate(secretBackend string, secretList config.SecretList) (map[string]SecretData, error) {
 	secretMap := make(map[string]SecretData)
+	if secretBackend != "" {
+		secretBackend = secretBackend + "/"
+	}
 	for _, secret := range secretList {
-		s, err := aw.Read(aw.VaultConfig.SecretBackend + "/" + secret.VaultPath)
+		s, err := aw.Read(secretBackend + secret.VaultPath)
 		if err != nil {
 			return nil, err
 		}
@@ -97,7 +100,7 @@ func (aw *ApiWrapper) Populate(secretList config.SecretList) (map[string]SecretD
 			secretMap[secret.Name] = s.Data
 		} else {
 			if aw.VaultConfig.FailOnEmptySecret {
-				return  nil, errors.New(aw.VaultConfig.SecretBackend + "/" + secret.VaultPath +" was empty")
+				return  nil, errors.New( secret.VaultPath +" was empty")
 			}
 		}
 	}

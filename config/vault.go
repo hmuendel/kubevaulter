@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+//Vault config holds the parsed configuration to communicate and authenticate against vault
 type Vault struct {
 	EndpointUrl string `valid:"url~Invalid EndpointUrl"`
 	SecretBackend string `valid:"-"`

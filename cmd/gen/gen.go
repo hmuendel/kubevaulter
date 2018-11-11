@@ -17,18 +17,20 @@
 package main
 
 import (
+	"bytes"
 	log "github.com/Sirupsen/logrus"
 	"github.com/hmuendel/kubevaulter"
 	"github.com/hmuendel/kubevaulter/config"
 	"github.com/hmuendel/kubevaulter/randstring"
 	"github.com/hmuendel/kubevaulter/transformer"
+	"strings"
+	"text/template"
 )
 
 var (
 	VERSION string
-	COMMIT string
+	COMMIT  string
 )
-
 
 func main() {
 	defaults := make(map[string]interface{})
@@ -47,7 +49,6 @@ func main() {
 	defaults["generator.length"] = 16
 	defaults["generator.allowedCharacters"] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 	defaults["generator.transform"] = "NONE"
-
 
 	config.Setup("kubevaulter gen", VERSION, COMMIT, "KV", defaults)
 	loggingConfig := config.NewLogginConfig()
@@ -71,6 +72,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.Debug("reading secret config")
+	secretList := config.NewSecretList()
+	err = secretList.Init()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Debug("reading random strings config")
 	randomStringsCfg := config.NewRandomStrings()
 	err = randomStringsCfg.Init()
@@ -79,7 +87,7 @@ func main() {
 	}
 
 	log.Debug("creating login forge with path: ", vaultConfig.JwtPath, ", Role: ", vaultConfig.Role,
-		", caCert: ", vaultConfig.CaCert," and auth path ", vaultConfig.AuthPath )
+		", caCert: ", vaultConfig.CaCert, " and auth path ", vaultConfig.AuthPath)
 	lf, err := kubevaulter.NewJwtLoginForge(vaultConfig.AuthPath, vaultConfig.JwtPath, vaultConfig.Role, vaultConfig.CaCert)
 	if err != nil {
 		log.Fatal(err)
@@ -99,27 +107,43 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.Debug("populating secret map")
+	secretMap, err := vh.Populate(vaultConfig.SecretBackend, secretList)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	randomStringMap := make(map[string]string)
 	funcMap := transformer.DefaultFuncMap()
 	for key, value := range randomStringsCfg {
 		log.Debug("creating random string ", key)
-		randomStringMap[key] = randstring.Create(value.Length,value.AllowedCharacters)
+		randomStringMap[strings.ToLower(key)] = randstring.Create(value.Length, value.AllowedCharacters)
 	}
 	log.Debug("created random string map ")
 	// iterating over all target entries in target list
-	for _, target := range targetList  {
+	for _, target := range targetList {
 		log.Debug("handling data for target ", target.Path)
 		payload := make(map[string]interface{})
 		// reading target value from vault to check if it exists
-		s,reterr := vh.Read(target.Path)
+		s, reterr := vh.Read(target.Path)
 		// iterating over key value pairs in the desired secret
 		for key, value := range target.Data {
 			log.Debug("handling data ", key)
+			//TODO: trying to get rid of nested if clauses
 			//using the literal value if set
 			if value.Lit != "" {
 				log.Debug("using literal value ")
+				tpl, err := template.New("dummy").Parse(value.Lit)
+				if err != nil {
+					log.Error(err)
+				}
+				result := new(bytes.Buffer)
+				err = tpl.Execute(result, secretMap)
+				if err != nil {
+					log.Error(err)
+				}
 				if fn, ok := funcMap[value.Transform]; ok {
-					payload[key] = fn(value.Lit)
+					payload[key] = fn(result.String())
 				} else {
 					log.Error("No function found with identifier: ", value.Transform)
 				}
@@ -134,8 +158,8 @@ func main() {
 				}
 				// if value exists and override flag is not set prepare payload with old value
 
-				if rString, exists := randomStringsCfg[value.Ref]; exists && ! rString.Override && ok {
-					if ! exists {
+				if rString, exists := randomStringsCfg[value.Ref]; exists && !rString.Override && ok {
+					if !exists {
 						log.Warning("nothing found in random string cfg for ", value.Ref)
 					}
 					log.Debug("using old value")
@@ -143,14 +167,14 @@ func main() {
 				} else {
 					// otherwise prepare payload with new value
 					log.Debug("writing new value")
-					if  val, ok := randomStringMap[value.Ref]; ok {
+					if val, ok := randomStringMap[strings.ToLower(value.Ref)]; ok {
 						if fn, ok := funcMap[value.Transform]; ok {
 							payload[key] = fn(val)
 						} else {
 							log.Error("No function found with identifier: ", value.Transform)
 						}
 					} else {
-						log.Error("Referenced random string not find ",value.Ref )
+						log.Error("Referenced random string not found ", value.Ref)
 					}
 				}
 			} else {
@@ -158,7 +182,10 @@ func main() {
 			}
 		}
 		log.Debug("writing data structure to vault")
-		vh.Write(target.Path,payload)
+		_, err := vh.Write(target.Path, payload)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 	log.Info("finished successfully")
 

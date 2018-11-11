@@ -25,7 +25,7 @@ import (
 type Execution struct {
 	Command string
 	Args []string
-	Env []string
+	Env map[string]string
 }
 
 type Executions []Execution

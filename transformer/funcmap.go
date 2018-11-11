@@ -17,6 +17,7 @@
 package transformer
 
 import (
+	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
@@ -38,11 +39,17 @@ func Sha256(in string) string {
 	return hex.EncodeToString(bytes[:])
 }
 
+func Md5(in string) string {
+	bytes := md5.Sum([]byte(in))
+	return hex.EncodeToString(bytes[:])
+}
+
 func DefaultFuncMap() FuncMap  {
 	m := FuncMap{}
 	m[""] = Identity
 	m["NONE"] = Identity
 	m["SHA1"] = Sha1
 	m["SHA256"] = Sha256
+	m["MD5"] = Md5
 	return  m
 }

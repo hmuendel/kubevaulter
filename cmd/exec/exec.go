@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package exec
+package main
 
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/hmuendel/kubevaulter"
 	"github.com/hmuendel/kubevaulter/config"
-	"text/template"
+	"github.com/hmuendel/kubevaulter/templater"
 	"os"
-	"path/filepath"
+	"os/exec"
+	"strings"
+	"text/template"
 )
 
-
-
 var (
-	VERSION string
-	COMMIT string
-	secretMap map[string]secretData
+	VERSION       string
+	COMMIT        string
+	secretMap     map[string]secretData
 	templatesPath = "/share"
 )
 
@@ -51,8 +51,7 @@ func main() {
 	defaults["vault.jwtPath"] = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 	defaults["vault.authPath"] = "auth/kubernetes/login"
 
-
-	config.Setup("kubevaulter rec", VERSION, COMMIT, "KV", defaults)
+	config.Setup("kubevaulter exec", VERSION, COMMIT, "KV", defaults)
 	loggingConfig := config.NewLogginConfig()
 	err := loggingConfig.Init()
 	if err != nil {
@@ -73,8 +72,23 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Debug("creating login forge with path: ", vaultConfig.JwtPath, " and auth path ", vaultConfig.AuthPath )
-	lf, err := kubevaulter.NewJwtLoginForge(vaultConfig.AuthPath, vaultConfig.JwtPath, vaultConfig.Role, vaultConfig.AuthPath)
+
+	log.Debug("reading execution config")
+	executions := config.NewExecutions()
+	err = executions.Init()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Debug("reading recursive pathes config")
+	recPathes := config.NewRecursivePathList()
+	err = recPathes.Init()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Debug("creating login forge with path: ", vaultConfig.JwtPath, " and auth path ", vaultConfig.AuthPath)
+	lf, err := kubevaulter.NewJwtLoginForge(vaultConfig.AuthPath, vaultConfig.JwtPath, vaultConfig.Role, vaultConfig.CaCert)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -91,67 +105,68 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	for _, secret := range secretList {
-		log.Debug("getting secret from vault ", vaultConfig.SecretBackend+"/"+secret.VaultPath)
-		s, err := vh.Read(vaultConfig.SecretBackend + "/" + secret.VaultPath)
-		if err != nil {
-			log.Error(err)
-		}
-		if s != nil && s.Data != nil {
-			secretMap[secret.Name] = s.Data
-		} else {
-			if vaultConfig.FailOnEmptySecret {
-				log.Fatal("Empty reply from secret ", vaultConfig.SecretBackend+"/"+secret.VaultPath)
-			} else {
-				log.Warning("Empty reply from secret ", vaultConfig.SecretBackend+"/"+secret.VaultPath)
-			}
-		}
-	}
-	err = filepath.Walk(templatesPath, walkFunc)
+	log.Debug("populating secret map")
+	secretMap, err := vh.Populate(vaultConfig.SecretBackend, secretList)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Debug("rendering pathes: ", recPathes)
+	for _, recPath := range []string(recPathes) {
+		log.Debug("path: ", recPath)
+		templater.Walk(recPath, secretMap)
+	}
+
+	for _, execution := range executions {
+		renderedArgs := make([]string, len(execution.Args))
+		for idx, arg := range execution.Args {
+			tpl := template.New("arg")
+			_, err := tpl.Parse(os.ExpandEnv(arg))
+			if err != nil {
+				log.Error(err)
+			}
+			buf := strings.Builder{}
+			err = tpl.Execute(&buf, secretMap)
+			if err != nil {
+				log.Error(err)
+			}
+			renderedArgs[idx] = buf.String()
+		}
+
+		cmd := exec.Command(execution.Command, renderedArgs...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		//cmd.Args = renderedArgs
+
+		renderedEnv := make([]string, len(execution.Env))
+		idx := 0
+		for name, value := range execution.Env {
+			tpl := template.New("env")
+			_, err := tpl.Parse(value)
+			if err != nil {
+				log.Error(err)
+			}
+			buf := strings.Builder{}
+			buf.WriteString(name)
+			buf.WriteString("=")
+			err = tpl.Execute(&buf, secretMap)
+			if err != nil {
+				log.Error(err)
+			}
+			renderedEnv[idx] = buf.String()
+			idx += 1
+		}
+		cmd.Env = append(os.Environ(), renderedEnv...)
+		log.Debug("runnning command: ", cmd.Path)
+		log.Debug("args: ", execution.Args)
+		log.Debug("env: ", execution.Env)
+
+		err := cmd.Run()
+		//out,err:= cmd.Output()
+		//log.Info(string(out))
+		if err != nil {
+			log.Error(err)
+		}
+	}
 	log.Info("finished successfully")
 }
-
-
-func walkFunc(path string, info os.FileInfo, err error) error {
-	if err != nil {
-		return err
-	}
-	if info.IsDir() {
-		return nil
-	}
-	log.Debug("reading template ", path)
-	tpl, err := template.ParseFiles(path)
-	if err != nil {
-		return err
-	}
-	log.Debug("read template: ", tpl)
-	log.Debug("openening for writing : ", path)
-	f, err := os.Create(path)
-	defer f.Close()
-	if err != nil {
-		return err
-	}
-	log.Debug("rendering template: ", path)
-	err = tpl.Execute(f,secretMap)
-	if err != nil {
-		return err
-	}
-	log.Debug("writing rendered template to file")
-	f.Sync()
-	return nil
-}
-
-
-
-
-
-
-
-
-
-
-

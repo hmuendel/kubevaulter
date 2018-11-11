@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: pod-example
+  name: kubevaulter-gen
 spec:
   containers:
   - name: gen-test
@@ -10,11 +10,14 @@ spec:
     - containerPort: 80
     volumeMounts:
     - name: config-vol
-      mountPath: /etc/config
+      mountPath: /root/config
+    - name: certs
+      mountPath: /root/certs
   volumes:
     - name: config-vol
       configMap:
-        name: log-config
-        items:
-          - key: log_level
-            path: log_level
+        name: kubevaulter-gen
+    - name: certs
+      configMap:
+        name: kubevaulter-test
+
