@@ -7,7 +7,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build \
 --ldflags "-X main.COMMIT=$(git rev-parse HEAD) \
--X main.VERSION=$(cat ./cmd/rec/version)" 	\
+-X main.VERSION=$(cat ./cmd/exec/version)" 	\
 ./cmd/exec
 
 RUN git rev-parse HEAD

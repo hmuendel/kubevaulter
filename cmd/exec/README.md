@@ -7,6 +7,7 @@ Executor executes a list of specified commands while providing
  ```yaml
 executions:
   - command: "echo"
+    failNonZero: true #default false
     args:
       - "-v"
       - "-Dpassword={{- .user.password }}"

@@ -166,6 +166,12 @@ func main() {
 		//log.Info(string(out))
 		if err != nil {
 			log.Error(err)
+			if execution.FailNonZero {
+				log.Error("fail flag set, exiting with non zero")
+				os.Exit(1)
+			}
+			log.Error("fail flag unset, continuing")
+
 		}
 	}
 	log.Info("finished successfully")
